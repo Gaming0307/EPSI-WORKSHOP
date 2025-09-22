@@ -1,104 +1,196 @@
-Équipe : 2 développeurs (Dev1, Dev2) + 2 ingénieurs IT (IT1, IT2)
+# 🛡️ Plan de Déploiement Intranet Autonome
+## Mission D.I.P. - Résistance Anti-Ultron
 
-Objectif
+---
 
-Déployer en 4 jours un intranet autonome, chiffré, open source, comprenant :
+## 👥 **Équipe de Mission**
+**Composition :** 2 développeurs + 2 ingénieurs IT
 
-Messagerie sécurisée (Matrix Synapse + Element)
+| Rôle | Membre | Spécialité |
+|------|--------|------------|
+| 💻 **Développeur Lead** | Dev1 | Backend & API |
+| 🎨 **Développeur Frontend** | Dev2 | UI/UX & Documentation |
+| 🔧 **Ingénieur Système** | IT1 | Infrastructure & Sécurité |
+| 🔍 **Ingénieur DevOps** | IT2 | Monitoring & Automatisation |
 
-Wiki collaboratif (Wiki.js)
+---
 
-Forum/annonces (Discourse)
+## 🎯 **Objectif Mission**
 
-Accessible par navigateur depuis un réseau local fermé.
+> **Déployer en 4 jours un intranet autonome, chiffré et open source**
 
-Répartition des rôles
-Rôle	Missions clés
-Dev1	Déploiement & configuration des applis (Docker Compose, tests API).
-Dev2	Intégration front minimal (branding, config UI), doc utilisateur.
-IT1	Installation OS, réseau local (Wi-Fi/Ethernet isolé), sécurité (pare-feu, TLS).
-IT2	Sauvegardes, monitoring basique, doc technique & scripts automatisés.
-Architecture rapide
+### 📋 Fonctionnalités Requises
+- ✉️ **Messagerie sécurisée** - Matrix Synapse + Element
+- 📚 **Wiki collaboratif** - Wiki.js
+- 💬 **Forum/Annonces** - Discourse
 
-Serveur : Debian/Ubuntu minimal.
+### 🌐 Contraintes Techniques
+- **Accès :** Navigateur web via réseau local fermé
+- **Sécurité :** Chiffrement end-to-end obligatoire
+- **Autonomie :** Fonctionnement offline complet
 
-Conteneurs : Docker + Docker Compose.
+---
 
-Sécurité : TLS auto-signé, pare-feu UFW, chiffrement disque (optionnel selon temps).
+## 🏗️ **Architecture Système**
 
-Accès : Wi-Fi dédié ou VLAN.
+### 🖥️ Infrastructure de Base
+```
+🏢 Serveur Principal
+├── 🐧 OS: Debian/Ubuntu minimal
+├── 🐳 Conteneurisation: Docker + Docker Compose  
+├── 🔐 Sécurité: TLS auto-signé + UFW
+└── 📡 Réseau: Wi-Fi dédié ou VLAN isolé
+```
 
-Planning collaboratif (24 h 30)
-Jour 1 – 6 h
+### 🔗 Stack Applicative
+```
+📱 Interface Utilisateur (HTTPS)
+├── Element Web (Matrix client)
+├── Wiki.js (Documentation)
+└── Discourse (Forum)
 
-IT1 & IT2 (3 h chacun)
+🔧 Services Backend
+├── Matrix Synapse (Messagerie)
+├── PostgreSQL (Base de données)
+└── Nginx (Reverse proxy)
+```
 
-Installation Debian/Ubuntu, MAJ système.
+---
 
-Configuration réseau intranet (DHCP/point d’accès).
+## 📅 **Planning de Mission - 24h30**
 
-Mise en place SSH, pare-feu UFW.
+### 🌅 **Jour 1 - Fondations** *(6h)*
 
-Dev1 & Dev2 (en parallèle, 3 h chacun)
+#### 🔧 **IT1 & IT2** *(3h chacun)*
+- [ ] Installation Debian/Ubuntu + mises à jour système
+- [ ] Configuration réseau intranet (DHCP/point d'accès)
+- [ ] Mise en place SSH sécurisé + pare-feu UFW
+- [ ] Tests de connectivité réseau local
 
-Préparer docker-compose.yml pour Matrix, Wiki.js, Discourse.
+#### 💻 **Dev1 & Dev2** *(3h en parallèle)*
+- [ ] Préparation `docker-compose.yml` pour Matrix, Wiki.js, Discourse
+- [ ] Création dépôt Git interne (scripts + documentation)
+- [ ] Téléchargement des images Docker (mode offline)
+- [ ] Structure de base des configurations
 
-Créer dépôt Git interne (scripts, doc).
+---
 
-Jour 2 – 6 h
+### ⚡ **Jour 2 - Sécurité & Core Services** *(6h)*
 
-IT1/IT2 : Génération certificats TLS, test réseau.
+#### 🔐 **IT1 & IT2**
+- [ ] **IT1:** Génération certificats TLS + tests réseau
+- [ ] **IT2:** Scripts d'automatisation de base
 
-Dev1 : Déploiement Matrix Synapse + Element, premier test E2E.
+#### 🚀 **Dev1 & Dev2**
+- [ ] **Dev1:** Déploiement Matrix Synapse + Element
+- [ ] **Dev1:** Premier test de messagerie E2E
+- [ ] **Dev2:** Interface de login simplifiée
+- [ ] **Dev2:** Documentation utilisateur (messagerie)
 
-Dev2 : Interface de login simple, préparation doc utilisateur (messagerie).
+---
 
-Jour 3 – 6 h
+### 📚 **Jour 3 - Services Collaboratifs** *(6h)*
 
-IT1 : Sauvegarde basique (rsync, snapshot disque).
+#### 🛠️ **IT1 & IT2**
+- [ ] **IT1:** Système de sauvegarde (rsync + snapshots)
+- [ ] **IT2:** Monitoring basique (logs + alertes)
 
-Dev1 : Déploiement Wiki.js + Postgres.
+#### 🔧 **Dev1 & Dev2**
+- [ ] **Dev1:** Déploiement Wiki.js + PostgreSQL
+- [ ] **Dev1:** Configuration base de données
+- [ ] **Dev2:** Déploiement Discourse
+- [ ] **Dev2:** Configuration catégories forum
 
-Dev2 : Déploiement Discourse, configuration catégories.
+---
 
-IT2 : Monitoring basique (logs, alertes).
+### ✅ **Jour 4 - Tests & Finalisation** *(6h30)*
 
-Jour 4 – 6 h 30
+#### 🧪 **Tests Intensifs** *(Équipe complète)*
+- [ ] Tests de charge (5-10 connexions simultanées)
+- [ ] Vérification chiffrement E2E complet
+- [ ] Tests de permissions et sécurité
+- [ ] Validation resilience réseau
 
-Équipe complète :
+#### 📖 **Documentation Finale**
+- [ ] Guide administrateur (installation + sauvegarde)
+- [ ] Guide utilisateur (connexion + utilisation)
+- [ ] Scripts d'installation automatisés
+- [ ] Démonstration interne finale
 
-Tests de charge (5–10 connexions simultanées).
+---
 
-Vérification chiffrement E2E et permissions.
+## 🎯 **Répartition Détaillée des Rôles**
 
-Rédaction finale : guide admin & guide utilisateur.
+### 💻 **Dev1 - Développeur Lead**
+- **Focus :** Déploiement & configuration applicative
+- **Outils :** Docker Compose, APIs, tests backend
+- **Livrables :** Services fonctionnels + tests API
 
-Démonstration interne.
+### 🎨 **Dev2 - Développeur Frontend**
+- **Focus :** Intégration front + expérience utilisateur
+- **Outils :** Branding, config UI, documentation
+- **Livrables :** Interface accessible + guides utilisateur
 
-Livrables
+### 🔧 **IT1 - Ingénieur Système**
+- **Focus :** Infrastructure + sécurité
+- **Outils :** OS, réseau, pare-feu, TLS
+- **Livrables :** Environnement sécurisé + connectivité
 
-Serveur prêt avec messagerie, wiki, forum.
+### 🔍 **IT2 - Ingénieur DevOps**
+- **Focus :** Monitoring + automatisation
+- **Outils :** Sauvegardes, scripts, surveillance
+- **Livrables :** Système monitored + documentation technique
 
-Documentation
+---
 
-Guide admin (installation, sauvegarde).
+## 📦 **Livrables de Mission**
 
-Guide utilisateur (connexion, messagerie, wiki, forum).
+### 🖥️ **Infrastructure Opérationnelle**
+- ✅ Serveur autonome avec messagerie, wiki, forum
+- ✅ Réseau local isolé et sécurisé
+- ✅ Système de sauvegarde automatisé
 
-Scripts d’installation : fichier docker-compose.yml unique + script réseau.
+### 📚 **Documentation Complète**
+- 📋 **Guide Administrateur** - Installation, maintenance, sauvegarde
+- 👥 **Guide Utilisateur** - Connexion, messagerie, wiki, forum  
+- 🛠️ **Scripts d'Installation** - `docker-compose.yml` + scripts réseau
+- 🔧 **Documentation Technique** - Architecture, dépannage, évolutions
 
-Indicateurs de succès
+---
 
-Services accessibles depuis tout poste du réseau local via HTTPS.
+## 📊 **Indicateurs de Réussite**
 
-Messagerie chiffrée fonctionnelle entre au moins 4 utilisateurs.
+### ✅ **Critères Techniques**
+- [ ] Services accessibles via HTTPS depuis tout poste du réseau local
+- [ ] Messagerie chiffrée fonctionnelle entre ≥4 utilisateurs simultanés  
+- [ ] Wiki & forum supportant ≥20 connexions concurrentes
+- [ ] Temps de réponse <2s pour toutes les interfaces
 
-Wiki & forum supportant ≥20 connexions simultanées.
+### 🔒 **Critères Sécuritaires**
+- [ ] Chiffrement E2E validé sur tous les canaux
+- [ ] Isolation réseau complète (pas de fuite Internet)
+- [ ] Authentification robuste + gestion des permissions
+- [ ] Sauvegardes automatiques + tests de restauration
 
-Conseils pour maximiser le temps
+---
 
-Téléchargez à l’avance les images Docker pour éviter la dépendance Internet.
+## 💡 **Optimisations pour Maximiser l'Efficacité**
 
-Automatisez (bash/Ansible) dès le Jour 1.
+### 🚀 **Préparatifs Essentiels**
+- **Pré-téléchargement** - Images Docker offline pour éviter dépendance Internet
+- **Automatisation dès J1** - Scripts bash/Ansible pour déploiements reproductibles  
+- **Templates prêts** - Configurations de base pré-validées
 
-Réunions flash (15 min) au début et fin de chaque jour pour synchroniser.
+### 📞 **Coordination d'Équipe**
+- **Réunions flash** - 15 min début/fin de journée pour synchronisation
+- **Communication continue** - Matrix dès que opérationnel pour coordination
+- **Documentation partagée** - Wiki collaboratif en temps réel
+
+### 🔧 **Bonnes Pratiques**
+- **Tests continus** - Validation à chaque étape
+- **Rollback prévu** - Snapshots avant chaque déploiement majeur
+- **Monitoring proactif** - Alertes dès les premiers services actifs
+
+---
+
+> **🎯 Mission D.I.P. - "La résistance commence par la communication sécurisée"**
