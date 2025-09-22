@@ -375,14 +375,7 @@ tests/
 
 ## 🚀 **Démarrage Rapide**
 
-### 1️⃣ **Création de la Structure**
-```bash
-# Utiliser le script de création
-./setup-project.sh intranet-dip
-cd intranet-dip
-```
-
-### 2️⃣ **Configuration Initiale**
+### 1️⃣ **Configuration Initiale**
 ```bash
 # Copier les variables d'environnement
 cp .env.example .env
@@ -391,7 +384,7 @@ cp .env.example .env
 nano .env
 ```
 
-### 3️⃣ **Installation et Déploiement**
+### 2️⃣ **Installation et Déploiement**
 ```bash
 # Voir les commandes disponibles
 make help
