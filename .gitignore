@@ -1,0 +1,55 @@
+# 📊 Données et logs
+data/
+logs/
+*.log
+
+# 🔐 Sécurité
+security/ssl/*.pem
+security/ssl/*.key
+security/ssl/*.crt
+*.env
+secrets/
+
+# 💾 Sauvegardes
+backups/daily/
+backups/weekly/
+*.backup
+*.dump
+
+# 🐳 Docker
+.docker/
+docker-compose.override.yml
+
+# 🗄️ Bases de données
+*.db
+*.sqlite
+*.sql.gz
+
+# 🔧 Temporaire
+tmp/
+temp/
+.temp/
+*~
+*.swp
+*.swo
+
+# 📱 OS
+.DS_Store
+Thumbs.db
+.directory
+
+# 🎯 IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# 📦 Node modules (si utilisés)
+node_modules/
+npm-debug.log*
+
+# 🐍 Python (si utilisé)
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env

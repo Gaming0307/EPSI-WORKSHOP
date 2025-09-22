@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # 🗄️ Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: dip-postgres
+    environment:
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - dip-network
+    restart: unless-stopped
+
+  # 💬 Matrix Synapse (Serveur de messagerie)
+  matrix-synapse:
+    image: matrixdotorg/synapse:latest
+    container_name: dip-matrix
+    depends_on:
+      - postgres
+    environment:
+      SYNAPSE_SERVER_NAME: ${MATRIX_SERVER_NAME:-dip.local}
+      SYNAPSE_REPORT_STATS: "no"
+    volumes:
+      - ./data/matrix:/data
+      - ./services/matrix/homeserver.yaml:/data/homeserver.yaml
+    ports:
+      - "8008:8008"
+    networks:
+      - dip-network
+    restart: unless-stopped
+
+  # 🌐 Element Web (Client Matrix)
+  element:
+    image: vectorim/element-web:latest
+    container_name: dip-element
+    volumes:
+      - ./services/matrix/element-config.json:/app/config.json
+    ports:
+      - "8080:80"
+    networks:
+      - dip-network
+    restart: unless-stopped
+
+  # 📚 Wiki.js
+  wiki:
+    image: requarks/wiki:2
+    container_name: dip-wiki
+    depends_on:
+      - postgres
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: synapse
+      DB_PASS: ${POSTGRES_PASSWORD:-changeme}
+      DB_NAME: wiki
+    volumes:
+      - ./data/wiki:/wiki/data
+    ports:
+      - "3000:3000"
+    networks:
+      - dip-network
+    restart: unless-stopped
+
+  # 🌐 Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: dip-nginx
+    depends_on:
+      - element
+      - wiki
+      - matrix-synapse
+    volumes:
+      - ./frontend/landing-page:/usr/share/nginx/html
+      - ./security/ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - dip-network
+    restart: unless-stopped
+
+networks:
+  dip-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${NETWORK_SUBNET:-172.20.0.0/16}
+
+volumes:
+  postgres-data:
+  matrix-data:
+  wiki-data:
