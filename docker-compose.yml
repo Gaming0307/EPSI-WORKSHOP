@@ -46,25 +46,25 @@ services:
     restart: unless-stopped
 
   # 📚 Wiki.js
-#  wiki:
-#    image: requarks/wiki:2
-#    container_name: dip-wiki
-#    depends_on:
-#      - postgres
-#    environment:
-#      DB_TYPE: postgres
-#      DB_HOST: postgres
-#      DB_PORT: 5432
-#      DB_USER: synapse
-#      DB_PASS: ${POSTGRES_PASSWORD:-changeme}
-#      DB_NAME: wiki
-#    volumes:
-#      - ./data/wiki:/wiki/data
-#    ports:
-#     - "3000:3000"
-#    networks:
-#      - dip-network
-#    restart: unless-stopped
+  wiki:
+    image: requarks/wiki:2
+    container_name: dip-wiki
+    depends_on:
+      - postgres
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: synapse
+      DB_PASS: ${POSTGRES_PASSWORD:-changeme}
+      DB_NAME: wiki
+    volumes:
+      - ./data/wiki:/wiki/data
+    ports:
+      - "3000:3000"
+    networks:
+      - dip-network
+    restart: unless-stopped
 
   # 🌐 Nginx Reverse Proxy
   nginx:
