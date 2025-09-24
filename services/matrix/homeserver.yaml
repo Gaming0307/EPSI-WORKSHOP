@@ -24,7 +24,7 @@ database:
   name: psycopg2
   args:
     user: synapse
-    password: "${POSTGRES_PASSWORD}"
+    password: M9jdEm86
     database: synapse
     host: postgres
     port: 5432

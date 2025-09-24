@@ -24,6 +24,7 @@ services:
     networks:
       - dip-network
     restart: unless-stopped
+
   # 💬 Matrix Synapse (Serveur de messagerie)
   matrix-synapse:
     image: matrixdotorg/synapse:latest
@@ -39,7 +40,7 @@ services:
       - ./services/matrix/log.config:/data/log.config
       - ./security/ssl:/data/ssl:ro
     ports:
-      - "8008:8008"
+      - "18008:8008"
     networks:
       - dip-network
     restart: unless-stopped
@@ -89,7 +90,7 @@ services:
     image: nginx:alpine
     container_name: dip-nginx
     depends_on:
-      - element
+      #- element
       - wiki
       #- matrix-synapse
     volumes:
