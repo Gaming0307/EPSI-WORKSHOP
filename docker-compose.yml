@@ -70,7 +70,7 @@ services:
     volumes:
       - ./data/wiki:/wiki/data
     ports:
-      - "3000:3000"
+      - "3003:3000"
     networks:
       - dip-network
     restart: unless-stopped
@@ -87,7 +87,7 @@ services:
       - ./frontend/landing-page:/usr/share/nginx/html
       - ./security/ssl:/etc/nginx/ssl
     ports:
-      - "80:80"
+      - "83:80"
       - "443:443"
     networks:
       - dip-network
