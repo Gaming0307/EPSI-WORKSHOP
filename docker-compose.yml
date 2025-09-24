@@ -36,11 +36,18 @@ services:
     volumes:
       - ./data/matrix:/data
       - ./services/matrix/homeserver.yaml:/data/homeserver.yaml
+      - ./services/matrix/log.config:/data/log.config
+      - ./security/ssl:/data/ssl:ro
     ports:
       - "8008:8008"
     networks:
       - dip-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8008/_matrix/client/versions || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
 
   # 🌐 Element Web (Client Matrix)
   element:
@@ -49,7 +56,7 @@ services:
     volumes:
       - ./services/matrix/element-config.json:/app/config.json
     ports:
-      - "8081:80"
+      - "8008:80"
     networks:
       - dip-network
     restart: unless-stopped

@@ -1,9 +1,12 @@
+# Configuration Matrix Synapse pour Mission D.I.P.
+# Réseau fermé - Chiffrement E2E - Autonome
 
 # === SERVEUR ===
 server_name: "${DOMAIN_NAME}"
 pid_file: /data/homeserver.pid
 web_client_location: https://${DOMAIN_NAME}/element/
 public_baseurl: https://${DOMAIN_NAME}
+report_stats: false # Pas de statistiques
 
 # === ÉCOUTE ===
 listeners:
@@ -97,10 +100,6 @@ worker_app: synapse.app.homeserver
 
 # === MÉTRIQUES (Pour monitoring) ===
 enable_metrics: true
-listeners:
-  - port: 9090
-    type: metrics
-    bind_addresses: ['127.0.0.1']
 
 # === SAUVEGARDES ===
 # Désactiver la suppression automatique pour les sauvegardes

@@ -1,0 +1,62 @@
+{
+    "default_server_config": {
+        "m.homeserver": {
+            "base_url": "https://localhost/_matrix",
+            "server_name": "localhost"
+        }
+    },
+    "brand": "D.I.P. Intranet",
+    "branding": {
+        "welcome_background_url": "/assets/dip-background.jpg",
+        "auth_header_logo_url": "/assets/logo-dip.png"
+    },
+    "default_theme": "dark",
+    "default_country_code": "FR",
+    "show_labs_settings": false,
+    "disable_custom_urls": true,
+    "disable_guests": false,
+    "disable_3pid_login": true,
+    "disable_login_language_selector": true,
+    
+    "room_directory": {
+        "servers": ["localhost"]
+    },
+    
+    "features": {
+        "feature_thread": true,
+        "feature_custom_themes": false,
+        "feature_report_to_moderators": true
+    },
+    
+    "settings_defaults": {
+        "breadcrumbs": true,
+        "MessageComposerInput.ctrlEnterToSend": true,
+        "MessageComposerInput.autoReplaceEmoji": true,
+        "MessageComposerInput.suggestEmoji": true,
+        "sendTypingNotifications": false,
+        "showReadReceipts": true,
+        "showTwelveHourTimestamps": false,
+        "alwaysShowEncryptionIcons": true,
+        "showRedactions": false,
+        "enableWidgetScreenshots": false,
+        "showHiddenEventsInTimeline": false,
+        "showAvatarChanges": false,
+        "showDisplaynameChanges": false,
+        "showImages": true,
+        "showJoinLeaves": false,
+        "promptBeforeInviteUnknownUsers": true,
+        "notificationSound": false,
+        "notificationsEnabled": false
+    },
+    
+    "help_topics": {
+        "encryption": "https://localhost/wiki/encryption-help",
+        "verification": "https://localhost/wiki/verification-help"
+    },
+    
+    "welcome_user_id": "@admin:localhost",
+    "map_style_url": null,
+    
+    "privacy_policy_url": "https://localhost/wiki/privacy-policy",
+    "cookie_policy_url": "https://localhost/wiki/cookie-policy"
+}
