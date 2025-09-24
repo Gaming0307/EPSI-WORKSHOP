@@ -2,11 +2,11 @@
 # Réseau fermé - Chiffrement E2E - Autonome
 
 # === SERVEUR ===
-server_name: "${DOMAIN_NAME}"
+server_name: "dip.local"
 pid_file: /data/homeserver.pid
-web_client_location: https://${DOMAIN_NAME}/element/
-public_baseurl: https://${DOMAIN_NAME}
-report_stats: false # Pas de statistiques
+web_client_location: https://dip.local/element/
+public_baseurl: https://dip.local
+report_stats: false
 
 # === ÉCOUTE ===
 listeners:
@@ -14,7 +14,7 @@ listeners:
     tls: false
     type: http
     x_forwarded: true
-    bind_addresses: ['::1', '127.0.0.1', '0.0.0.0']
+    bind_addresses: ['0.0.0.0']
     resources:
       - names: [client, federation]
         compress: false
@@ -23,8 +23,8 @@ listeners:
 database:
   name: psycopg2
   args:
-    user: synapse_user
-    password: ${POSTGRES_PASSWORD}
+    user: synapse
+    password: "${POSTGRES_PASSWORD}"
     database: synapse
     host: postgres
     port: 5432
@@ -37,70 +37,63 @@ log_config: "/data/log.config"
 # === MÉDIAS ET STOCKAGE ===
 media_store_path: /data/media_store
 uploads_path: /data/uploads
-max_upload_size: 100M
-max_image_pixels: 50M
+max_upload_size: 50M
+max_image_pixels: 32M
 
 # === UTILISATEURS ET INSCRIPTION ===
 enable_registration: false
 registration_shared_secret: "${REGISTRATION_SECRET}"
-
-# Permettre aux invités de rejoindre des salons
-allow_guest_access: true
+allow_guest_access: false
 default_room_version: "10"
 
 # === SÉCURITÉ ===
 # Désactiver la fédération (réseau fermé)
 federation_domain_whitelist: []
 send_federation: false
-federation_client_minimum_tls_version: 1.2
 
 # Clés de signature
 signing_key_path: "/data/homeserver.signing.key"
-trusted_key_servers: []  # Vide car pas de fédération
+trusted_key_servers: []
 
-# === CHIFFREMENT E2E (OBLIGATOIRE) ===
-# Forcer le chiffrement sur tous les nouveaux salons privés
+# === CHIFFREMENT E2E ===
 encryption_enabled_by_default_for_room_type: all
 require_auth_for_profile_requests: true
 
-# === LIMITES DE TAUX (Adapté intranet) ===
+# === LIMITES DE TAUX (Intranet) ===
 rc_message:
-  per_second: 5
-  burst_count: 50
+  per_second: 10
+  burst_count: 100
 
 rc_registration:
-  per_second: 0.1
-  burst_count: 3
+  per_second: 0.5
+  burst_count: 5
 
 rc_login:
   address:
-    per_second: 0.17
-    burst_count: 3
+    per_second: 1
+    burst_count: 5
   account:
-    per_second: 0.17
-    burst_count: 3
+    per_second: 1
+    burst_count: 5
 
-# === RÉTENTION DES DONNÉES ===
-# Garder les messages 1 an max pour l'espace
-user_ips_max_age: 365d
+# === RÉTENTION ===
+user_ips_max_age: 30d
 redaction_retention_period: 7d
 
-# === SALLES PUBLIQUES ===
-# Désactiver l'annuaire public (intranet fermé)
-allow_public_rooms_without_auth: false
+# === SALLES ===
+allow_public_rooms_without_auth: true
 allow_public_rooms_over_federation: false
 
-# === NOTIFICATIONS ===
-# Pas de notifications push (pas d'Internet)
-push_include_content: false
+# === ADMIN INITIAL ===
+# Pour créer le premier utilisateur admin
+auto_join_rooms:
+  - "#general:dip.local"
 
-# === WORKERS (Optionnel pour charge) ===
-# Configuration basique sans workers
-worker_app: synapse.app.homeserver
-
-# === MÉTRIQUES (Pour monitoring) ===
+# === MÉTRIQUES ===
 enable_metrics: true
+metrics_bind_host: 0.0.0.0
+metrics_port: 9000
 
-# === SAUVEGARDES ===
-# Désactiver la suppression automatique pour les sauvegardes
-auto_join_rooms: []
+# === SÉCURITÉ SUPPLÉMENTAIRE ===
+suppress_key_server_warning: true
+enable_3pid_lookup: false

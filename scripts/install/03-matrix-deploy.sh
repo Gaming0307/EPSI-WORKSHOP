@@ -1,275 +1,226 @@
 #!/bin/bash
-# Script de déploiement Matrix - Mission D.I.P. - VERSION CORRIGÉE
+# Script de déploiement Matrix pour Mission D.I.P.
+# Auteur: DEV1 - Backend Team
 
-set -e
+set -e  # Arrêt en cas d'erreur
 
-echo "🛡️ === DÉPLOIEMENT MATRIX SYNAPSE - MISSION D.I.P. ==="
-
-# Variables
+# === VARIABLES ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
-MATRIX_DATA="$PROJECT_ROOT/data/matrix"
 
-# Couleurs
+# Détection automatique de la racine du projet
+if [ -f "$SCRIPT_DIR/.env" ]; then
+    PROJECT_ROOT="$SCRIPT_DIR"
+elif [ -f "$SCRIPT_DIR/../.env" ]; then
+    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+elif [ -f "$(pwd)/.env" ]; then
+    PROJECT_ROOT="$(pwd)"
+else
+    PROJECT_ROOT="$SCRIPT_DIR"
+fi
+
+ENV_FILE="$PROJECT_ROOT/.env"
+
+# === COULEURS ===
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Fonctions
-log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+# === FONCTIONS ===
+log() {
+    echo -e "${BLUE}[$(date +'%H:%M:%S')]${NC} $1"
 }
 
-log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+success() {
+    echo -e "${GREEN}✅ $1${NC}"
 }
 
-log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+warning() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
 }
 
-log_step() {
-    echo -e "${BLUE}[ÉTAPE]${NC} $1"
+error() {
+    echo -e "${RED}❌ $1${NC}"
+    exit 1
 }
 
-# Vérifications préalables
+# === VÉRIFICATIONS PRÉALABLES ===
 check_requirements() {
-    log_step "Vérification des prérequis..."
+    log "Vérification des prérequis..."
     
-    if ! command -v docker &> /dev/null; then
-        log_error "Docker n'est pas installé"
-        exit 1
+    command -v docker >/dev/null 2>&1 || error "Docker n'est pas installé"
+    command -v docker-compose >/dev/null 2>&1 || error "Docker Compose n'est pas installé"
+    
+    if [ ! -f "$ENV_FILE" ]; then
+        error "Fichier .env manquant. Copiez .env.example vers .env et configurez-le"
     fi
     
-    # Vérifier Docker Compose (nouvelle ou ancienne syntaxe)
-    if command -v docker-compose &> /dev/null; then
-        COMPOSE_CMD="docker-compose"
-    elif docker compose version &> /dev/null 2>&1; then
-        COMPOSE_CMD="docker compose"
-    else
-        log_error "Docker Compose n'est pas installé"
-        exit 1
-    fi
-    
-    if [ ! -f "$PROJECT_ROOT/.env" ]; then
-        log_error "Fichier .env manquant. Copiez .env.example vers .env"
-        exit 1
-    fi
-    
-    if [ ! -f "$PROJECT_ROOT/docker-compose.yml" ]; then
-        log_error "Fichier docker-compose.yml manquant"
-        exit 1
-    fi
-    
-    log_info "✅ Prérequis validés"
+    success "Prérequis validés"
 }
 
-# Création des répertoires
+# === CRÉATION DES DOSSIERS ===
 create_directories() {
-    log_step "Création des répertoires de données..."
+    log "Création de la structure des dossiers..."
     
-    mkdir -p "$MATRIX_DATA"/{media_store,uploads}
+    mkdir -p "$PROJECT_ROOT/data/matrix"
     mkdir -p "$PROJECT_ROOT/data/postgres"
     mkdir -p "$PROJECT_ROOT/security/ssl"
+    mkdir -p "$PROJECT_ROOT/backups/matrix"
     
-    # Permissions appropriées
-    chmod 755 "$MATRIX_DATA"
-    chmod 755 "$MATRIX_DATA"/{media_store,uploads}
+    # Permissions correctes pour Matrix
+    chmod 700 "$PROJECT_ROOT/data/matrix"
+    chown -R 991:991 "$PROJECT_ROOT/data/matrix" 2>/dev/null || warning "Impossible de changer le propriétaire"
     
-    log_info "✅ Répertoires créés"
+    success "Dossiers créés"
 }
 
-# Génération des certificats SSL
-generate_ssl_certs() {
-    log_step "Vérification des certificats SSL..."
+# === GÉNÉRATION CERTIFICATS SSL ===
+generate_ssl_certificates() {
+    log "Génération des certificats SSL..."
     
-    local ssl_dir="$PROJECT_ROOT/security/ssl"
-    local cert_file="$ssl_dir/dip.crt"
-    local key_file="$ssl_dir/dip.key"
+    SSL_DIR="$PROJECT_ROOT/security/ssl"
     
-    if [ ! -f "$cert_file" ] || [ ! -f "$key_file" ]; then
-        log_info "Génération des certificats SSL..."
+    if [ ! -f "$SSL_DIR/dip.local.crt" ]; then
+        # Chargement des variables d'environnement
+        source "$ENV_FILE"
         
-        # Créer le script de génération s'il n'existe pas
-        if [ ! -f "$ssl_dir/generate-certs.sh" ]; then
-            cat > "$ssl_dir/generate-certs.sh" << 'EOF'
-#!/bin/bash
-DOMAIN="dip.local"
-CERT_DIR="$(dirname "$0")"
-
-openssl genrsa -out "$CERT_DIR/dip.key" 2048
-openssl req -new -x509 -key "$CERT_DIR/dip.key" -out "$CERT_DIR/dip.crt" -days 365 \
-    -subj "/C=FR/ST=IDF/L=Paris/O=D.I.P./CN=$DOMAIN"
-
-chmod 600 "$CERT_DIR/dip.key"
-chmod 644 "$CERT_DIR/dip.crt"
-
-echo "✅ Certificats SSL générés"
-EOF
-            chmod +x "$ssl_dir/generate-certs.sh"
-        fi
+        # Génération certificat auto-signé
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+            -keyout "$SSL_DIR/dip.local.key" \
+            -out "$SSL_DIR/dip.local.crt" \
+            -subj "/C=${SSL_COUNTRY:-FR}/ST=${SSL_STATE:-IDF}/L=${SSL_CITY:-Paris}/O=${SSL_ORG:-DIP}/OU=${SSL_UNIT:-IT}/CN=dip.local/emailAddress=admin@dip.local"
         
-        # Exécuter la génération
-        cd "$ssl_dir" && bash generate-certs.sh
-        log_info "✅ Certificats SSL générés"
+        success "Certificats SSL générés"
     else
-        log_info "✅ Certificats SSL existants"
+        success "Certificats SSL déjà présents"
     fi
 }
 
-# Configuration Matrix avec auto-génération des clés
-setup_matrix_config() {
-    log_step "Configuration de Matrix Synapse..."
+# === GÉNÉRATION CLÉS MATRIX ===
+generate_matrix_keys() {
+    log "Génération des clés Matrix..."
     
-    # Le homeserver.yaml doit être présent
-    if [ ! -f "$PROJECT_ROOT/services/matrix/homeserver.yaml" ]; then
-        log_error "Configuration homeserver.yaml manquante dans services/matrix/"
-        exit 1
+    # Configuration homeserver si pas encore fait
+    if [ ! -f "$PROJECT_ROOT/data/matrix/homeserver.yaml" ]; then
+        docker run --rm \
+            -v "$PROJECT_ROOT/data/matrix:/data" \
+            -e SYNAPSE_SERVER_NAME=dip.local \
+            -e SYNAPSE_REPORT_STATS=no \
+            matrixdotorg/synapse:latest generate
+        
+        # Copier notre configuration personnalisée
+        cp "$PROJECT_ROOT/services/matrix/homeserver.yaml" "$PROJECT_ROOT/data/matrix/homeserver.yaml"
+        
+        success "Configuration Matrix générée"
+    else
+        success "Configuration Matrix déjà présente"
     fi
-    
-    log_info "✅ Configuration Matrix validée"
 }
 
-# Test de configuration
-test_configuration() {
-    log_step "Démarrage et test des services..."
+# === DÉMARRAGE DES SERVICES ===
+start_services() {
+    log "Démarrage des services Matrix..."
     
     cd "$PROJECT_ROOT"
     
-    # Démarrer PostgreSQL
-    log_info "Démarrage de PostgreSQL..."
-    $COMPOSE_CMD up -d postgres
+    # Démarrage PostgreSQL d'abord
+    docker-compose up -d postgres
     
-    # Attendre PostgreSQL
-    log_info "Attente de PostgreSQL..."
-    for i in {1..30}; do
-        if $COMPOSE_CMD exec -T postgres pg_isready -U synapse >/dev/null 2>&1; then
-            break
-        fi
-        sleep 2
-        echo -n "."
-    done
-    echo
-    log_info "✅ PostgreSQL opérationnel"
+    # Attente que PostgreSQL soit prêt
+    log "Attente de PostgreSQL..."
+    sleep 10
     
-    # Démarrer Matrix (avec auto-génération des clés)
-    log_info "Démarrage de Matrix Synapse..."
-    $COMPOSE_CMD up -d matrix-synapse
+    # Démarrage Matrix Synapse
+    docker-compose up -d matrix-synapse
     
-    # Attendre Matrix
-    log_info "Attente de Matrix Synapse..."
-    for i in {1..60}; do
-        if curl -sf http://localhost:8008/health >/dev/null 2>&1; then
-            break
-        fi
-        sleep 2
-        echo -n "."
-    done
-    echo
+    # Attente que Matrix soit prêt
+    log "Attente de Matrix Synapse..."
+    sleep 15
     
-    if curl -sf http://localhost:8008/_matrix/client/versions >/dev/null 2>&1; then
-        log_info "✅ Matrix Synapse opérationnel"
-        
-        # Vérifier que la clé a été générée
-        if $COMPOSE_CMD exec -T synapse test -f /data/homeserver.signing.key; then
-            log_info "✅ Clé de signature générée automatiquement"
-        fi
-    else
-        log_error "❌ Problème avec Matrix Synapse"
-        $COMPOSE_CMD logs matrix-synapse | tail -20
-        exit 1
-    fi
-    
-    # Démarrer Nginx
-    log_info "Démarrage du reverse proxy..."
-    $COMPOSE_CMD up -d nginx
-    
-    # Test final HTTPS
-    sleep 5
-    if curl -sk https://localhost/_matrix/client/versions >/dev/null 2>&1; then
-        log_info "✅ Interface HTTPS opérationnelle"
-    else
-        log_warn "⚠️  Interface HTTPS ne répond pas encore"
-    fi
+    success "Services Matrix démarrés"
 }
 
-# Création du premier administrateur
+# === CRÉATION UTILISATEUR ADMIN ===
 create_admin_user() {
-    log_step "Création de l'utilisateur administrateur..."
+    log "Création de l'utilisateur administrateur..."
     
-    echo ""
-    echo "📝 Création du compte administrateur D.I.P."
-    echo "   Nom d'utilisateur recommandé: admin"
-    echo "   Mot de passe: [choisir un mot de passe fort]"
-    echo "   Admin: répondez 'y' pour les privilèges admin"
-    echo ""
+    source "$ENV_FILE"
     
-    cd "$PROJECT_ROOT"
+    # Vérifier si Matrix répond
+    for i in {1..30}; do
+        if docker exec dip-matrix curl -f http://localhost:8008/_matrix/client/versions >/dev/null 2>&1; then
+            break
+        fi
+        log "Attente de Matrix... ($i/30)"
+        sleep 2
+    done
     
-    if $COMPOSE_CMD exec -it synapse register_new_matrix_user \
+    # Créer l'utilisateur admin
+    docker exec -it dip-matrix register_new_matrix_user \
         -c /data/homeserver.yaml \
-        -a http://localhost:8008; then
-        log_info "✅ Utilisateur admin créé avec succès"
-    else
-        log_error "❌ Erreur lors de la création de l'utilisateur"
-        return 1
-    fi
-}
-
-# Configuration des salons par défaut
-setup_default_rooms() {
-    log_step "Information sur les salons par défaut..."
+        --user admin \
+        --password "${MATRIX_ADMIN_PASSWORD}" \
+        --admin \
+        http://localhost:8008
     
-    echo ""
-    echo "📋 Salons recommandés à créer via l'interface web:"
-    echo "   - #general:dip.local (public, discussions générales)"
-    echo "   - #annonces:dip.local (admins seulement, annonces)"
-    echo "   - #support:dip.local (public, support technique)"
-    echo "   - #urgence:dip.local (alertes d'urgence)"
-    echo ""
-    echo "🌐 Accès: https://localhost"
+    success "Utilisateur admin créé (admin / ${MATRIX_ADMIN_PASSWORD})"
 }
 
-# Menu principal
+# === TESTS DE CONNECTIVITÉ ===
+test_connectivity() {
+    log "Tests de connectivité Matrix..."
+    
+    # Test API Matrix
+    if curl -f -s http://localhost:8008/_matrix/client/versions >/dev/null; then
+        success "API Matrix accessible"
+    else
+        error "API Matrix inaccessible"
+    fi
+    
+    # Test base de données
+    if docker exec dip-postgres pg_isready -U synapse >/dev/null 2>&1; then
+        success "Base de données accessible"
+    else
+        error "Base de données inaccessible"
+    fi
+    
+    success "Tests de connectivité réussis"
+}
+
+# === FONCTION PRINCIPALE ===
 main() {
-    echo "🛡️ Configuration Matrix Synapse - Mission D.I.P."
-    echo "================================================="
+    echo -e "${BLUE}"
+    echo "================================================"
+    echo "🛡️  DÉPLOIEMENT MATRIX - MISSION D.I.P."
+    echo "================================================"
+    echo -e "${NC}"
     
     check_requirements
     create_directories
-    generate_ssl_certs
-    setup_matrix_config
-    test_configuration
+    generate_ssl_certificates
+    generate_matrix_keys
+    start_services
+    create_admin_user
+    test_connectivity
     
-    echo ""
-    echo "✅ Matrix Synapse déployé avec succès!"
-    echo ""
-    echo "🌐 Accès aux services:"
-    echo "   - Interface D.I.P.: https://localhost"
-    echo "   - API Matrix: https://localhost/_matrix"
-    echo "   - Element intégré: https://localhost/element"
-    echo ""
-    
-    read -p "Créer un utilisateur administrateur maintenant? [y/N]: " -n 1 -r
+    echo -e "${GREEN}"
+    echo "================================================"
+    echo "✅ DÉPLOIEMENT MATRIX TERMINÉ AVEC SUCCÈS"
+    echo "================================================"
+    echo -e "${NC}"
     echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        create_admin_user
-    else
-        echo "⚠️  Vous pourrez créer l'admin plus tard avec:"
-        echo "   $COMPOSE_CMD exec -it synapse register_new_matrix_user -c /data/homeserver.yaml -a http://localhost:8008"
-    fi
-    
-    setup_default_rooms
-    
-    echo ""
-    echo "🎯 Mission accomplie! La résistance peut maintenant communiquer de manière sécurisée."
-    echo ""
-    echo "📚 Documentation: docs/users/matrix-guide.md"
+    echo "🔗 Accès Matrix: http://localhost:8008"
+    echo "👤 Utilisateur admin: admin"
+    echo "🔒 Mot de passe admin: (voir fichier .env)"
+    echo
+    echo "Prochaines étapes:"
+    echo "1. Démarrer Element Web: docker-compose up -d element"
+    echo "2. Configurer Nginx: docker-compose up -d nginx"
+    echo "3. Tester la messagerie chiffrée"
 }
 
-# Exécution si script appelé directement
+# === EXÉCUTION ===
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi
