@@ -3,7 +3,7 @@ flask_forum.py
 
 Version corrigée pour un mini-forum en un seul fichier, avec templates embarqués fonctionnant avec render_template_string.
 """
-from flask import Flask, request, g, redirect, url_for, render_template_string, abort
+from flask import Flask, request, g, redirect, url_for, render_template_string, abort #type: ignore
 import sqlite3
 from datetime import datetime
 import html
@@ -21,15 +21,54 @@ BASE_HTML = '''
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{{ title or 'Mini-Forum' }}</title>
   <style>
-    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; max-width:900px; margin:2rem auto; padding:0 1rem; color:#111 }
-    header { margin-bottom:1.5rem }
-    form { margin:1rem 0 }
-    .thread { border:1px solid #ddd; padding:0.8rem; margin-bottom:0.8rem; border-radius:8px }
-    .post { border-top:1px solid #eee; padding:0.6rem 0 }
-    .meta { color:#666; font-size:0.9rem }
-    input, textarea { width:100%; padding:0.5rem; margin-top:0.3rem; border-radius:6px; border:1px solid #ccc }
-    button { padding:0.5rem 1rem; border-radius:6px; border:0; background:#0b63d0; color:white }
-    a { color:#0b63d0; text-decoration:none }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0 1rem;
+      background-color: #f9f9f9;
+      }
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 1rem 0;
+      text-align: center;
+      margin-bottom: 1rem;
+      }
+    a {
+      color: #4CAF50;
+      text-decoration: none;
+      }
+    a:hover {
+      text-decoration: underline;
+      }
+    h1, h2, h3, h4 {
+      margin-top: 0;
+      }
+    .thread, .post {
+      background: white;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+    .thread .meta, .post .meta {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 0.4rem;
+      }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      font-weight: bold;
+    }
+
   </style>
 <body>
   <header>

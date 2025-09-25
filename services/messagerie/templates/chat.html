@@ -607,6 +607,230 @@
                 right: 0;
             }
         }
+        /* === CONTRÔLES MÉDIAS === */
+        .media-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-left: 10px;
+        }
+
+        .media-button {
+            background: rgba(52, 73, 94, 0.5);
+            border: none;
+            color: #bdc3c7;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .media-button:hover {
+            background: rgba(52, 152, 219, 0.3);
+            color: #3498db;
+        }
+
+        .media-button.recording {
+            background: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .recording-controls {
+            display: none;
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .recording-controls.active {
+            display: flex;
+        }
+
+        .recording-timer {
+            color: #e74c3c;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .recording-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .record-button {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .record-button.stop {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+        }
+
+        .record-button.send {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        /* === MESSAGES AVEC MÉDIAS === */
+
+        .message.media {
+            border-left-color: #9b59b6;
+        }
+
+        .message-media {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid #34495e;
+        }
+
+        .audio-player {
+            width: 100%;
+            background: rgba(52, 73, 94, 0.3);
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .audio-player::-webkit-media-controls-panel {
+            background-color: rgba(52, 73, 94, 0.8);
+        }
+
+        .file-attachment {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(52, 73, 94, 0.3);
+            border-radius: 5px;
+            text-decoration: none;
+            color: #ecf0f1;
+            transition: all 0.3s ease;
+        }
+
+        .file-attachment:hover {
+            background: rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .file-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .file-size {
+            font-size: 0.8em;
+            color: #95a5a6;
+        }
+
+        .download-button {
+            background: rgba(39, 174, 96, 0.3);
+            color: #27ae60;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .download-button:hover {
+            background: rgba(39, 174, 96, 0.5);
+        }
+
+        .image-preview {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .image-preview:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-progress {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .upload-progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #3498db;
+        }
+        .image-preview {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .image-preview:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -684,11 +908,445 @@
         <div class="typing-indicator" id="typingIndicator"></div>
         
         <div class="input-area">
+            <!-- Contrôles d'enregistrement -->
+            <div class="recording-controls" id="recordingControls">
+                <div class="recording-timer" id="recordingTimer">00:00</div>
+                <div class="recording-buttons">
+                    <button class="record-button stop" onclick="stopRecording()">⏹ Arrêter</button>
+                    <button class="record-button" onclick="cancelRecording()">✖ Annuler</button>
+                </div>
+            </div>
+            
+            <!-- Barre de progression upload -->
+            <div class="upload-progress" id="uploadProgress">
+                <div class="progress-text" id="progressText">Upload en cours...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+            
+            <!-- Zone de saisie principale -->
             <div class="input-container">
                 <input type="text" id="messageInput" placeholder="Tapez votre message..." maxlength="1000">
+                
+                <!-- Contrôles médias -->
+                <div class="media-controls">
+                    <!-- Bouton fichier -->
+                    <button class="media-button" onclick="document.getElementById('fileInput').click()" title="Joindre un fichier">
+                        📎
+                    </button>
+                    <input type="file" id="fileInput" class="file-input" onchange="handleFileSelect(event)">
+                    
+                    <!-- Bouton enregistrement vocal -->
+                    <button class="media-button" id="recordButton" onclick="toggleRecording()" title="Message vocal">
+                        🎤
+                    </button>
+                </div>
+                
                 <button onclick="sendMessage()">Envoyer</button>
             </div>
         </div>
+        <script>
+            // === VARIABLES MÉDIAS ===
+            let mediaRecorder = null;
+            let audioChunks = [];
+            let recordingInterval = null;
+            let recordingStartTime = 0;
+            let isRecording = false;
+
+            // === GESTION ENREGISTREMENT AUDIO ===
+
+            async function toggleRecording() {
+                if (!isRecording) {
+                    await startRecording();
+                } else {
+                    stopRecording();
+                }
+            }
+
+            async function startRecording() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    
+                    mediaRecorder = new MediaRecorder(stream, {
+                        mimeType: 'audio/webm;codecs=opus'
+                    });
+                    
+                    audioChunks = [];
+                    recordingStartTime = Date.now();
+                    
+                    mediaRecorder.ondataavailable = function(event) {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = function() {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        handleAudioRecorded(audioBlob);
+                    };
+                    
+                    mediaRecorder.start();
+                    isRecording = true;
+                    
+                    // Mise à jour interface
+                    document.getElementById('recordButton').classList.add('recording');
+                    document.getElementById('recordingControls').classList.add('active');
+                    document.getElementById('messageInput').style.display = 'none';
+                    
+                    // Timer
+                    recordingInterval = setInterval(updateRecordingTimer, 100);
+                    
+                    showNotification('🎤 Enregistrement en cours...');
+                    
+                } catch (error) {
+                    console.error('Erreur accès microphone:', error);
+                    showError('Impossible d\'accéder au microphone');
+                }
+            }
+
+            function stopRecording() {
+                if (!isRecording || !mediaRecorder) return;
+                
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                
+                isRecording = false;
+                clearInterval(recordingInterval);
+                
+                // Réinitialiser interface
+                document.getElementById('recordButton').classList.remove('recording');
+                document.getElementById('recordingControls').classList.remove('active');
+                document.getElementById('messageInput').style.display = 'block';
+            }
+
+            function cancelRecording() {
+                if (mediaRecorder && isRecording) {
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                }
+                
+                isRecording = false;
+                clearInterval(recordingInterval);
+                audioChunks = [];
+                
+                // Réinitialiser interface
+                document.getElementById('recordButton').classList.remove('recording');
+                document.getElementById('recordingControls').classList.remove('active');
+                document.getElementById('messageInput').style.display = 'block';
+                
+                showNotification('Enregistrement annulé');
+            }
+
+            function updateRecordingTimer() {
+                const elapsed = Date.now() - recordingStartTime;
+                const seconds = Math.floor(elapsed / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const displaySeconds = seconds % 60;
+                
+                document.getElementById('recordingTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${displaySeconds.toString().padStart(2, '0')}`;
+                
+                // Limiter à 5 minutes
+                if (elapsed > 5 * 60 * 1000) {
+                    stopRecording();
+                }
+            }
+
+            async function handleAudioRecorded(audioBlob) {
+                try {
+                    // Créer FormData pour upload
+                    const formData = new FormData();
+                    const filename = `voice_${Date.now()}.webm`;
+                    formData.append('file', audioBlob, filename);
+                    
+                    // Afficher progression
+                    showUploadProgress('Upload message vocal...');
+                    
+                    // Upload vers serveur
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    hideUploadProgress();
+                    
+                    if (result.success) {
+                        // Envoyer message vocal
+                        if (currentPrivateChat) {
+                            // Message vocal privé
+                            socket.emit('send_audio_message', {
+                                sender: username,
+                                recipient: currentPrivateChat,
+                                audio_data: result
+                            });
+                        } else {
+                            // Message vocal public
+                            socket.emit('send_audio_message', {
+                                username: username,
+                                room: currentRoom,
+                                audio_data: result
+                            });
+                        }
+                        
+                        showNotification('Message vocal envoyé !');
+                    } else {
+                        showError('Erreur envoi message vocal: ' + result.error);
+                    }
+                    
+                } catch (error) {
+                    hideUploadProgress();
+                    console.error('Erreur upload audio:', error);
+                    showError('Erreur lors de l\'envoi du message vocal');
+                }
+            }
+
+            // === GESTION FICHIERS ===
+
+            function handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                // Vérifier taille (16MB max)
+                if (file.size > 16 * 1024 * 1024) {
+                    showError('Fichier trop volumineux (max 16MB)');
+                    return;
+                }
+                
+                uploadFile(file);
+            }
+
+            async function uploadFile(file) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    // Afficher progression
+                    showUploadProgress(`Upload de ${file.name}...`);
+                    
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    hideUploadProgress();
+                    
+                    if (result.success) {
+                        // Demander message optionnel
+                        const message = prompt('Message avec ce fichier (optionnel):') || '';
+                        
+                        // Envoyer message avec fichier
+                        socket.emit('send_file_message', {
+                            username: username,
+                            room: currentRoom,
+                            file_data: result,
+                            message: message
+                        });
+                        
+                        showNotification('Fichier partagé !');
+                        
+                        // Réinitialiser input
+                        document.getElementById('fileInput').value = '';
+                    } else {
+                        showError('Erreur upload: ' + result.error);
+                    }
+                    
+                } catch (error) {
+                    hideUploadProgress();
+                    console.error('Erreur upload fichier:', error);
+                    showError('Erreur lors de l\'upload du fichier');
+                }
+            }
+
+            function showUploadProgress(text) {
+                const progress = document.getElementById('uploadProgress');
+                const progressText = document.getElementById('progressText');
+                
+                progressText.textContent = text;
+                progress.classList.add('active');
+                
+                // Animation de la barre
+                let width = 0;
+                const interval = setInterval(() => {
+                    width += Math.random() * 15;
+                    if (width > 90) width = 90;
+                    document.getElementById('progressFill').style.width = width + '%';
+                }, 200);
+                
+                progress.dataset.interval = interval;
+            }
+
+            function hideUploadProgress() {
+                const progress = document.getElementById('uploadProgress');
+                const interval = progress.dataset.interval;
+                
+                if (interval) {
+                    clearInterval(interval);
+                }
+                
+                // Compléter la barre puis cacher
+                document.getElementById('progressFill').style.width = '100%';
+                
+                setTimeout(() => {
+                    progress.classList.remove('active');
+                    document.getElementById('progressFill').style.width = '0%';
+                }, 500);
+            }
+
+            // === AFFICHAGE MESSAGES MÉDIAS ===
+
+            function addMessage(data, isOwn = false) {
+                const container = document.getElementById('messagesContainer');
+                const messageDiv = document.createElement('div');
+                
+                let messageClass = `message ${isOwn ? 'own' : ''}`;
+                if (data.type === 'file' || data.type === 'audio') {
+                    messageClass += ' media';
+                }
+
+                if (fileData.category === 'images') {
+                    mediaContent = `
+                        <div class="message-media">
+                            <img src="${fileData.url}" alt="${fileData.original_name}" 
+                                class="image-preview" onclick="window.open('${fileData.url}', '_blank')">
+                        </div>
+                    `;
+                }
+                messageDiv.className = messageClass;
+                
+                let mediaContent = '';
+                
+                // Contenu média selon le type
+                if (data.type === 'audio') {
+                    mediaContent = `
+                        <div class="message-media">
+                            <audio controls class="audio-player">
+                                <source src="${data.audio_data.url}" type="audio/webm">
+                                <source src="${data.audio_data.url}" type="audio/mpeg">
+                                Votre navigateur ne supporte pas l'audio.
+                            </audio>
+                        </div>
+                    `;
+                } else if (data.type === 'file') {
+                    const fileData = data.file_data;
+                    let fileIcon = getFileIcon(fileData.category);
+                    
+                    if (fileData.category === 'images') {
+                        mediaContent = `
+                            <div class="message-media">
+                                <img src="${fileData.url}" alt="${fileData.original_name}" 
+                                    class="image-preview" onclick="window.open('${fileData.url}', '_blank')">
+                            </div>
+                        `;
+                    } else {
+                        mediaContent = `
+                            <div class="message-media">
+                                <a href="${fileData.url}" class="file-attachment" download="${fileData.original_name}">
+                                    <div class="file-icon">${fileIcon}</div>
+                                    <div class="file-info">
+                                        <div class="file-name">${escapeHtml(fileData.original_name)}</div>
+                                        <div class="file-size">${formatFileSize(fileData.size)}</div>
+                                    </div>
+                                    <button class="download-button">📥</button>
+                                </a>
+                            </div>
+                        `;
+                    }
+                }
+                
+                messageDiv.innerHTML = `
+                    <div class="message-header">
+                        <span class="username">${escapeHtml(data.username || data.sender)}</span>
+                        <span class="timestamp">${data.timestamp}</span>
+                    </div>
+                    ${data.message ? `<div class="message-text">${escapeHtml(data.message)}</div>` : ''}
+                    ${mediaContent}
+                `;
+
+                container.appendChild(messageDiv);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            function addPrivateMessage(data) {
+                const container = document.getElementById('privateMessages');
+                const messageDiv = document.createElement('div');
+                const isSent = data.sender === username;
+                
+                let messageClass = `private-message ${isSent ? 'sent' : 'received'}`;
+                if (data.type === 'audio') {
+                    messageClass += ' media';
+                }
+                
+                messageDiv.className = messageClass;
+                
+                let mediaContent = '';
+                if (data.type === 'audio') {
+                    mediaContent = `
+                        <audio controls class="audio-player" style="width: 200px; margin-top: 8px;">
+                            <source src="${data.audio_data.url}" type="audio/webm">
+                            <source src="${data.audio_data.url}" type="audio/mpeg">
+                            Audio non supporté
+                        </audio>
+                    `;
+                }
+                
+                messageDiv.innerHTML = `
+                    <div class="sender">${escapeHtml(data.sender)}</div>
+                    <div class="text">${escapeHtml(data.message)}</div>
+                    ${mediaContent}
+                    <div class="time">${data.timestamp}</div>
+                `;
+                
+                container.appendChild(messageDiv);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            // === UTILITAIRES MÉDIAS ===
+
+            function getFileIcon(category) {
+                const icons = {
+                    'images': '🖼️',
+                    'audio': '🎵',
+                    'video': '🎬',
+                    'documents': '📄',
+                    'archives': '📦',
+                    'unknown': '📄'
+                };
+                return icons[category] || icons.unknown;
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            }
+
+            // Écouter les nouveaux événements
+            socket.on('message', function(data) {
+                addMessage(data, (data.username || data.sender) === username);
+            });
+
+            socket.on('private_message', function(data) {
+                if (currentPrivateChat && 
+                    (data.sender === currentPrivateChat || data.recipient === currentPrivateChat)) {
+                    addPrivateMessage(data);
+                } else {
+                    const otherUser = data.sender === username ? data.recipient : data.sender;
+                    unreadCounts[otherUser] = (unreadCounts[otherUser] || 0) + 1;
+                    updateOnlineUsersList(onlineUsers);
+                    
+                    let notificationText = `Nouveau message de ${otherUser}`;
+                    if (data.type === 'audio') {
+                        notificationText = `Message vocal de ${otherUser}`;
+                    }
+                    showNotification(notificationText);
+                }
+            });
+        </script>
     </div>
 
     <!-- Modal pour messages privés -->
