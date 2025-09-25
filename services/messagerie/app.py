@@ -10,7 +10,7 @@ import datetime
 import hashlib
 import os
 import logging
-from werkzeug.serving import WSGIRequestHandler
+from werkzeug.serving import WSGIRequestHandler #type: ignore
 
 # Configuration logging
 logging.basicConfig(level=logging.INFO)
