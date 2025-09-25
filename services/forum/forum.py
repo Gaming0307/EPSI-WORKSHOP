@@ -247,4 +247,4 @@ if __name__ == '__main__':
         init_db()
 ##### host='0.0.0.0',port=5000,
     print('Démarrage du mini-forum sur http://127.0.0.1:5000')
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port=6000,debug=True)
