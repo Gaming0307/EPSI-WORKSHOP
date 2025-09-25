@@ -3,8 +3,8 @@
 # Alternative sécurisée à Matrix pour intranet fermé
 # Avec support messages privés intégré
 
-from flask import Flask, render_template, request, jsonify
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask import Flask, render_template, request, jsonify #type: ignore
+from flask_socketio import SocketIO, emit, join_room, leave_room #type: ignore
 import json
 import datetime
 import hashlib
