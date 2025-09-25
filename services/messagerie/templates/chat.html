@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messagerie D.I.P. - Mission Sécurisée</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c1419 0%, #1a252f 50%, #2c3e50 100%);
+            height: 100vh;
+            display: flex;
+            color: #ecf0f1;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(0, 0, 0, 0.4);
+            border-right: 2px solid #34495e;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #34495e;
+            background: rgba(52, 73, 94, 0.5);
+        }
+
+        .logo h1 {
+            color: #3498db;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .logo .subtitle {
+            color: #bdc3c7;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .channels {
+            padding: 20px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .channels h3, .private-section h3 {
+            color: #95a5a6;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .channel {
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .channel:hover {
+            background: rgba(52, 73, 94, 0.5);
+        }
+
+        .channel.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .channel-name {
+            font-weight: 500;
+        }
+
+        .user-count {
+            font-size: 0.8em;
+            color: #bdc3c7;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .channel.active .user-count {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .private-section {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .online-user {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            margin-bottom: 3px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .online-user:hover {
+            background: rgba(52, 73, 94, 0.3);
+        }
+
+        .online-user.has-unread {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid #3498db;
+        }
+
+        .user-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27ae60;
+            margin-right: 10px;
+        }
+
+        .user-name {
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+        .unread-count {
+            background: #e74c3c;
+            color: white;
+            font-size: 0.8em;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 2px solid #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .channel-info h2 {
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .channel-topic {
+            color: #95a5a6;
+            font-size: 0.9em;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #27ae60;
+        }
+
+        .status-dot.disconnected {
+            background: #e74c3c;
+        }
+
+        .disconnect-button {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .disconnect-button:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+        }
+
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-form {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            min-width: 400px;
+        }
+
+        .login-form h2 {
+            color: #3498db;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .login-form button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .login-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(52, 73, 94, 0.3);
+            border-left: 4px solid #3498db;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.own {
+            background: rgba(52, 152, 219, 0.2);
+            border-left-color: #2ecc71;
+            margin-left: 50px;
+        }
+
+        .message.system {
+            background: rgba(149, 165, 166, 0.2);
+            border-left-color: #f39c12;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .username {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .message.own .username {
+            color: #2ecc71;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #95a5a6;
+        }
+
+        .message-text {
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .typing-indicator {
+            padding: 10px 20px;
+            color: #f39c12;
+            font-style: italic;
+            font-size: 0.9em;
+            min-height: 25px;
+        }
+
+        .input-area {
+            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 2px solid #34495e;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-container input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .input-container button {
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .users-list {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #34495e;
+        }
+
+        .users-list h4 {
+            color: #95a5a6;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .user-tag {
+            display: inline-block;
+            background: rgba(52, 152, 219, 0.3);
+            color: #3498db;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .error-message {
+            background: rgba(231, 76, 60, 0.3);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* === MESSAGES PRIVÉS === */
+
+        .private-chat-modal {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 500px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            border: 2px solid #3498db;
+            border-radius: 10px 0 0 10px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .private-chat-header {
+            padding: 15px;
+            background: rgba(52, 152, 219, 0.3);
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .private-chat-header h3 {
+            color: #3498db;
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            color: #bdc3c7;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: rgba(231, 76, 60, 0.3);
+            color: #e74c3c;
+        }
+
+        .private-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .private-message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .private-message.sent {
+            background: rgba(52, 152, 219, 0.3);
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .private-message.received {
+            background: rgba(52, 73, 94, 0.5);
+        }
+
+        .private-message .sender {
+            font-size: 0.8em;
+            color: #95a5a6;
+            margin-bottom: 5px;
+        }
+
+        .private-message .text {
+            word-wrap: break-word;
+        }
+
+        .private-message .time {
+            font-size: 0.7em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .private-typing {
+            padding: 5px 15px;
+            font-style: italic;
+            color: #f39c12;
+            font-size: 0.8em;
+            min-height: 20px;
+        }
+
+        .private-input {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid #34495e;
+            display: flex;
+            gap: 10px;
+        }
+
+        .private-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 14px;
+        }
+
+        .private-input input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .private-input button {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .private-input button:hover {
+            transform: translateY(-1px);
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 2000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideInRight 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                order: 2;
+                max-height: 200px;
+            }
+            
+            .main-content {
+                order: 1;
+                height: calc(100vh - 200px);
+            }
+
+            .private-chat-modal {
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                top: 0;
+                right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay de connexion -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-form">
+            <h2>🛡️ Mission D.I.P.</h2>
+            <p style="color: #bdc3c7; margin-bottom: 30px;">Identification Agent</p>
+            <input type="text" id="usernameInput" placeholder="Nom d'agent" maxlength="20">
+            <input type="text" id="roomInput" placeholder="Canal initial" value="general">
+            <button onclick="joinChat()">Accéder à la Mission</button>
+        </div>
+    </div>
+
+    <!-- Interface principale -->
+    <div class="sidebar">
+        <div class="logo">
+            <h1>🛡️ D.I.P.</h1>
+            <div class="subtitle">Réseau Sécurisé</div>
+        </div>
+        
+        <div class="channels">
+            <h3>Canaux de Communication</h3>
+            <div class="channel active" data-channel="general">
+                <span class="channel-name"># général</span>
+                <span class="user-count">0</span>
+            </div>
+            <div class="channel" data-channel="ops">
+                <span class="channel-name"># opérations</span>
+                <span class="user-count">0</span>
+            </div>
+            <div class="channel" data-channel="tech">
+                <span class="channel-name"># technique</span>
+                <span class="user-count">0</span>
+            </div>
+            <div class="channel" data-channel="intel">
+                <span class="channel-name"># renseignement</span>
+                <span class="user-count">0</span>
+            </div>
+        </div>
+
+        <!-- Section Messages Privés -->
+        <div class="private-section">
+            <h3>Messages Privés</h3>
+            <div class="online-users" id="onlineUsers">
+                <!-- Liste des utilisateurs en ligne -->
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div class="channel-info">
+                <h2 id="currentChannelName"># général</h2>
+                <div class="channel-topic" id="currentChannelTopic">Canal général - Mission D.I.P.</div>
+            </div>
+            <div class="header-controls">
+                <div class="connection-status">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="connectionText">Connecté</span>
+                </div>
+                <button class="disconnect-button" onclick="disconnectUser()" title="Se déconnecter">
+                    🚪 Déconnexion
+                </button>
+            </div>
+        </div>
+
+        <div class="users-list" id="usersList" style="display: none;">
+            <h4>Agents connectés</h4>
+            <div id="usersContainer"></div>
+        </div>
+
+        <div class="messages" id="messagesContainer"></div>
+        
+        <div class="typing-indicator" id="typingIndicator"></div>
+        
+        <div class="input-area">
+            <div class="input-container">
+                <input type="text" id="messageInput" placeholder="Tapez votre message..." maxlength="1000">
+                <button onclick="sendMessage()">Envoyer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour messages privés -->
+    <div class="private-chat-modal" id="privateChatModal">
+        <div class="private-chat-header">
+            <h3 id="privateChatTitle">Conversation privée</h3>
+            <button class="close-button" onclick="closePrivateChat()">×</button>
+        </div>
+        <div class="private-messages" id="privateMessages"></div>
+        <div class="private-typing" id="privateTyping"></div>
+        <div class="private-input">
+            <input type="text" id="privateMessageInput" placeholder="Message privé..." maxlength="1000">
+            <button onclick="sendPrivateMessage()">Envoyer</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        const socket = io();
+        let username = '';
+        let currentRoom = 'general';
+        let isTyping = false;
+        let typingTimeout;
+        let connectedUsers = [];
+        
+        // Variables pour messages privés
+        let currentPrivateChat = null;
+        let onlineUsers = [];
+        let privateTypingTimeout = null;
+        let unreadCounts = {};
+
+        // === CONNEXION WEBSOCKET ===
+        
+        socket.on('connect', function() {
+            updateConnectionStatus(true);
+        });
+
+        socket.on('disconnect', function() {
+            updateConnectionStatus(false);
+        });
+
+        socket.on('error', function(data) {
+            showError(data.message);
+        });
+
+        // === GESTION UTILISATEUR ===
+
+        function joinChat() {
+            const usernameInput = document.getElementById('usernameInput');
+            const roomInput = document.getElementById('roomInput');
+            
+            if (usernameInput.value.trim() === '') {
+                alert('Veuillez entrer un nom d\'agent valide');
+                return;
+            }
+
+            username = usernameInput.value.trim();
+            currentRoom = roomInput.value.trim() || 'general';
+
+            // Reconnecter le socket si nécessaire (après déconnexion manuelle)
+            if (!socket.connected) {
+                socket.connect();
+                
+                // Attendre que la connexion soit établie avant de rejoindre
+                socket.once('connect', function() {
+                    updateConnectionStatus(true);
+                    
+                    socket.emit('join', {
+                        username: username,
+                        room: currentRoom
+                    });
+                    
+                    finishJoinChat();
+                });
+            } else {
+                // Socket déjà connecté
+                updateConnectionStatus(true);
+                
+                socket.emit('join', {
+                    username: username,
+                    room: currentRoom
+                });
+                
+                finishJoinChat();
+            }
+        }
+
+        function finishJoinChat() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('messageInput').focus();
+            
+            // Mettre à jour l'interface
+            updateChannelDisplay();
+            requestUsersList();
+            
+            // Demander la liste des utilisateurs en ligne (messages privés)
+            setTimeout(requestOnlineUsers, 1000);
+        }
+
+        // === GESTION MESSAGES ===
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            if (message === '') return;
+
+            socket.emit('message', {
+                username: username,
+                message: message,
+                room: currentRoom
+            });
+
+            messageInput.value = '';
+            stopTyping();
+        }
+
+        socket.on('message', function(data) {
+            addMessage(data, data.username === username);
+        });
+
+        socket.on('message_history', function(messages) {
+            messages.forEach(msg => addMessage(msg, msg.username === username));
+        });
+
+        function addMessage(data, isOwn = false) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isOwn ? 'own' : ''}`;
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <span class="username">${escapeHtml(data.username)}</span>
+                    <span class="timestamp">${data.timestamp}</span>
+                </div>
+                <div class="message-text">${escapeHtml(data.message)}</div>
+            `;
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addSystemMessage(text) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.innerHTML = `<div class="message-text">${text}</div>`;
+
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // === GESTION UTILISATEURS ===
+
+        socket.on('user_joined', function(data) {
+            addSystemMessage(`🟢 ${data.user} a rejoint ${data.room}`);
+            updateChannelUserCount(data.room, data.user_count);
+            if (data.room === currentRoom) {
+                requestUsersList();
+            }
+        });
+
+        socket.on('user_left', function(data) {
+            addSystemMessage(`🔴 ${data.user} a quitté ${data.room}`);
+            updateChannelUserCount(data.room, data.user_count);
+            if (data.room === currentRoom) {
+                requestUsersList();
+            }
+        });
+
+        socket.on('users_list', function(data) {
+            if (data.room === currentRoom) {
+                updateUsersList(data.users);
+            }
+        });
+
+        function requestUsersList() {
+            socket.emit('get_users', {room: currentRoom});
+        }
+
+        function updateUsersList(users) {
+            connectedUsers = users;
+            const container = document.getElementById('usersContainer');
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length > 0) {
+                container.innerHTML = users.map(user => 
+                    `<span class="user-tag">${escapeHtml(user)}</span>`
+                ).join('');
+                usersList.style.display = 'block';
+            } else {
+                usersList.style.display = 'none';
+            }
+        }
+
+        // === GESTION CANAUX ===
+
+        function switchChannel(newRoom) {
+            if (newRoom === currentRoom) return;
+
+            // Quitter l'ancien canal
+            socket.emit('leave', {
+                username: username,
+                room: currentRoom
+            });
+
+            // Rejoindre le nouveau
+            currentRoom = newRoom;
+            socket.emit('join', {
+                username: username,
+                room: currentRoom
+            });
+
+            // Nettoyer les messages
+            document.getElementById('messagesContainer').innerHTML = '';
+            document.getElementById('typingIndicator').textContent = '';
+            
+            updateChannelDisplay();
+            requestUsersList();
+        }
+
+        function updateChannelDisplay() {
+            const topics = {
+                'general': 'Canal général - Mission D.I.P.',
+                'ops': 'Opérations tactiques',
+                'tech': 'Support technique',
+                'intel': 'Renseignements'
+            };
+
+            document.getElementById('currentChannelName').textContent = `# ${currentRoom}`;
+            document.getElementById('currentChannelTopic').textContent = topics[currentRoom] || `Canal ${currentRoom}`;
+
+            // Mettre à jour la sidebar
+            document.querySelectorAll('.channel').forEach(ch => {
+                ch.classList.remove('active');
+                if (ch.dataset.channel === currentRoom) {
+                    ch.classList.add('active');
+                }
+            });
+        }
+
+        function updateChannelUserCount(room, count) {
+            const channel = document.querySelector(`[data-channel="${room}"]`);
+            if (channel) {
+                const counter = channel.querySelector('.user-count');
+                if (counter) {
+                    counter.textContent = count;
+                }
+            }
+        }
+
+        // === INDICATEUR DE FRAPPE ===
+
+        socket.on('typing', function(data) {
+            const indicator = document.getElementById('typingIndicator');
+            if (data.is_typing) {
+                indicator.textContent = `${data.username} tape un message...`;
+            } else {
+                indicator.textContent = '';
+            }
+        });
+
+        function stopTyping() {
+            if (isTyping) {
+                isTyping = false;
+                socket.emit('typing', {
+                    username: username,
+                    room: currentRoom,
+                    is_typing: false
+                });
+            }
+        }
+
+        // === MESSAGES PRIVÉS ===
+
+        socket.on('online_users_list', function(data) {
+            updateOnlineUsersList(data.users);
+        });
+
+        socket.on('user_online', function(data) {
+            if (data.username !== username && !onlineUsers.includes(data.username)) {
+                onlineUsers.push(data.username);
+                updateOnlineUsersList(onlineUsers);
+            }
+        });
+
+        socket.on('user_offline', function(data) {
+            onlineUsers = onlineUsers.filter(user => user !== data.username);
+            updateOnlineUsersList(onlineUsers);
+            
+            // Fermer le chat privé si c'était avec cet utilisateur
+            if (currentPrivateChat === data.username) {
+                closePrivateChat();
+            }
+        });
+
+        function updateOnlineUsersList(users) {
+            onlineUsers = users.filter(user => user !== username);
+            const container = document.getElementById('onlineUsers');
+            
+            container.innerHTML = onlineUsers.map(user => {
+                const unreadCount = unreadCounts[user] || 0;
+                const unreadBadge = unreadCount > 0 ? 
+                    `<span class="unread-count">${unreadCount}</span>` : '';
+                
+                return `
+                    <div class="online-user ${unreadCount > 0 ? 'has-unread' : ''}" 
+                         onclick="openPrivateChat('${user}')" 
+                         data-user="${user}">
+                        <div class="user-status"></div>
+                        <span class="user-name">${escapeHtml(user)}</span>
+                        ${unreadBadge}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openPrivateChat(targetUser) {
+            currentPrivateChat = targetUser;
+            
+            // Marquer comme lu
+            unreadCounts[targetUser] = 0;
+            updateOnlineUsersList(onlineUsers);
+            
+            // Afficher la modal
+            const modal = document.getElementById('privateChatModal');
+            const title = document.getElementById('privateChatTitle');
+            
+            title.textContent = `💬 ${targetUser}`;
+            modal.style.display = 'flex';
+            
+            // Charger l'historique
+            socket.emit('get_private_messages', {
+                requester: username,
+                other_user: targetUser
+            });
+            
+            // Focus sur l'input
+            document.getElementById('privateMessageInput').focus();
+        }
+
+        function closePrivateChat() {
+            document.getElementById('privateChatModal').style.display = 'none';
+            document.getElementById('privateMessages').innerHTML = '';
+            document.getElementById('privateTyping').textContent = '';
+            currentPrivateChat = null;
+        }
+
+        function sendPrivateMessage() {
+            const input = document.getElementById('privateMessageInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentPrivateChat) return;
+            
+            socket.emit('send_private_message', {
+                sender: username,
+                recipient: currentPrivateChat,
+                message: message
+            });
+            
+            input.value = '';
+            stopPrivateTyping();
+        }
+
+        socket.on('private_message', function(data) {
+            // Si c'est pour le chat actuellement ouvert
+            if (currentPrivateChat && 
+                (data.sender === currentPrivateChat || data.recipient === currentPrivateChat)) {
+                addPrivateMessage(data);
+            } else {
+                // Message non lu - incrémenter le compteur
+                const otherUser = data.sender === username ? data.recipient : data.sender;
+                unreadCounts[otherUser] = (unreadCounts[otherUser] || 0) + 1;
+                updateOnlineUsersList(onlineUsers);
+                
+                // Notification
+                showNotification(`Nouveau message privé de ${otherUser}`);
+            }
+        });
+
+        socket.on('private_message_history', function(data) {
+            const container = document.getElementById('privateMessages');
+            container.innerHTML = '';
+            
+            data.messages.forEach(msg => addPrivateMessage(msg));
+        });
+
+        function addPrivateMessage(data) {
+            const container = document.getElementById('privateMessages');
+            const messageDiv = document.createElement('div');
+            const isSent = data.sender === username;
+            
+            messageDiv.className = `private-message ${isSent ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `
+                <div class="sender">${escapeHtml(data.sender)}</div>
+                <div class="text">${escapeHtml(data.message)}</div>
+                <div class="time">${data.timestamp}</div>
+            `;
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // === INDICATEUR DE FRAPPE PRIVÉ ===
+
+        socket.on('private_typing', function(data) {
+            if (currentPrivateChat === data.sender) {
+                const indicator = document.getElementById('privateTyping');
+                if (data.is_typing) {
+                    indicator.textContent = `${data.sender} tape un message...`;
+                } else {
+                    indicator.textContent = '';
+                }
+            }
+        });
+
+        function stopPrivateTyping() {
+            if (currentPrivateChat) {
+                socket.emit('typing_private', {
+                    sender: username,
+                    recipient: currentPrivateChat,
+                    is_typing: false
+                });
+            }
+        }
+
+        function requestOnlineUsers() {
+            socket.emit('get_online_users');
+        }
+
+        // === ÉVÉNEMENTS ===
+
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+                return;
+            }
+
+            if (!isTyping) {
+                isTyping = true;
+                socket.emit('typing', {
+                    username: username,
+                    room: currentRoom,
+                    is_typing: true
+                });
+            }
+
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(stopTyping, 1000);
+        });
+
+        document.getElementById('privateMessageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendPrivateMessage();
+                return;
+            }
+            
+            if (currentPrivateChat) {
+                socket.emit('typing_private', {
+                    sender: username,
+                    recipient: currentPrivateChat,
+                    is_typing: true
+                });
+                
+                clearTimeout(privateTypingTimeout);
+                privateTypingTimeout = setTimeout(stopPrivateTyping, 1000);
+            }
+        });
+
+        document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                joinChat();
+            }
+        });
+
+        // Clic sur les canaux
+        document.querySelectorAll('.channel').forEach(channel => {
+            channel.addEventListener('click', function() {
+                const room = this.dataset.channel;
+                switchChannel(room);
+            });
+        });
+
+        // Fermer modal avec Échap
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && currentPrivateChat) {
+                closePrivateChat();
+            }
+        });
+
+        // === UTILITAIRES ===
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('connectionText');
+            
+            if (connected) {
+                dot.classList.remove('disconnected');
+                text.textContent = 'Connecté';
+            } else {
+                dot.classList.add('disconnected');
+                text.textContent = 'Déconnecté';
+            }
+        }
+
+        function showError(message) {
+            const container = document.getElementById('messagesContainer');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = `❌ Erreur: ${message}`;
+            container.appendChild(errorDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        function disconnectUser() {
+            // Confirmation avant déconnexion
+            if (confirm('Êtes-vous sûr de vouloir vous déconnecter de la mission D.I.P. ?')) {
+                
+                // Fermer la modal de chat privé si ouverte
+                if (currentPrivateChat) {
+                    closePrivateChat();
+                }
+                
+                // Informer les autres utilisateurs dans tous les canaux
+                if (username && currentRoom) {
+                    socket.emit('leave', {
+                        username: username,
+                        room: currentRoom
+                    });
+                }
+                
+                // Déconnecter proprement du serveur
+                socket.disconnect();
+                
+                // Nettoyer l'état local
+                username = '';
+                currentRoom = 'general';
+                currentPrivateChat = null;
+                onlineUsers = [];
+                connectedUsers = [];
+                unreadCounts = {};
+                isTyping = false;
+                
+                // Nettoyer les timeouts
+                if (typingTimeout) {
+                    clearTimeout(typingTimeout);
+                }
+                if (privateTypingTimeout) {
+                    clearTimeout(privateTypingTimeout);
+                }
+                
+                // Nettoyer l'interface
+                document.getElementById('messagesContainer').innerHTML = '';
+                document.getElementById('privateMessages').innerHTML = '';
+                document.getElementById('usersContainer').innerHTML = '';
+                document.getElementById('onlineUsers').innerHTML = '';
+                document.getElementById('typingIndicator').textContent = '';
+                document.getElementById('privateTyping').textContent = '';
+                document.getElementById('messageInput').value = '';
+                document.getElementById('privateMessageInput').value = '';
+                document.getElementById('usernameInput').value = '';
+                document.getElementById('roomInput').value = 'general';
+                
+                // Réinitialiser les canaux
+                document.querySelectorAll('.channel').forEach(ch => {
+                    ch.classList.remove('active');
+                    if (ch.dataset.channel === 'general') {
+                        ch.classList.add('active');
+                    }
+                    const counter = ch.querySelector('.user-count');
+                    if (counter) {
+                        counter.textContent = '0';
+                    }
+                });
+                
+                // Cacher la liste des utilisateurs
+                document.getElementById('usersList').style.display = 'none';
+                
+                // Afficher l'écran de connexion
+                document.getElementById('loginOverlay').style.display = 'flex';
+                
+                // Message de confirmation
+                showNotification('Déconnexion réussie - Session D.I.P. terminée');
+                
+                // Remettre le focus sur le champ username
+                setTimeout(() => {
+                    document.getElementById('usernameInput').focus();
+                }, 500);
+            }
+        }
+
+        // === MAINTIEN CONNEXION ===
+
+        setInterval(() => {
+            socket.emit('ping');
+        }, 30000);
+
+        socket.on('pong', function() {
+            // Connexion maintenue
+        });
+    </script>
+</body>
+</html>
