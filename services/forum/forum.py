@@ -206,5 +206,6 @@ def reply(thread_id):
 if __name__ == '__main__':
     with app.app_context():
         init_db()
+##### host='0.0.0.0',port=5000,
     print('Démarrage du mini-forum sur http://127.0.0.1:5000')
-    app.run(host='0.0.0.0',port=5000,debug=True)
+    app.run(debug=True)
